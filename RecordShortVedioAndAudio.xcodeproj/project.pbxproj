@@ -17,6 +17,10 @@
 		842C4A351FE0FD8000D3D199 /* RecordShortVedioAndAudioUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842C4A341FE0FD8000D3D199 /* RecordShortVedioAndAudioUITests.swift */; };
 		842C4A431FE0FDBD00D3D199 /* YXBaseRecordManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842C4A421FE0FDBD00D3D199 /* YXBaseRecordManager.swift */; };
 		844E87181FE128A4005179A6 /* WCLRecordEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 844E87161FE128A3005179A6 /* WCLRecordEncoder.m */; };
+		84DF2C2D201F060400785E34 /* YXRoundProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF2C2B201F060300785E34 /* YXRoundProgressView.swift */; };
+		84DF2C2E201F060400785E34 /* YXRecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF2C2C201F060300785E34 /* YXRecordView.swift */; };
+		84DF2C2F201F073600785E34 /* YXRoundProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF2C2B201F060300785E34 /* YXRoundProgressView.swift */; };
+		84DF2C31201F0CB100785E34 /* YXAVPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DF2C30201F0CB100785E34 /* YXAVPlayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +59,9 @@
 		844E87151FE128A2005179A6 /* RecordShortVedioAndAudio-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RecordShortVedioAndAudio-Bridging-Header.h"; sourceTree = "<group>"; };
 		844E87161FE128A3005179A6 /* WCLRecordEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLRecordEncoder.m; sourceTree = "<group>"; };
 		844E87171FE128A4005179A6 /* WCLRecordEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCLRecordEncoder.h; sourceTree = "<group>"; };
+		84DF2C2B201F060300785E34 /* YXRoundProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YXRoundProgressView.swift; sourceTree = "<group>"; };
+		84DF2C2C201F060300785E34 /* YXRecordView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YXRecordView.swift; sourceTree = "<group>"; };
+		84DF2C30201F0CB100785E34 /* YXAVPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YXAVPlayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,10 +112,13 @@
 		842C4A131FE0FD8000D3D199 /* RecordShortVedioAndAudio */ = {
 			isa = PBXGroup;
 			children = (
+				84DF2C2C201F060300785E34 /* YXRecordView.swift */,
+				84DF2C2B201F060300785E34 /* YXRoundProgressView.swift */,
 				842C4A141FE0FD8000D3D199 /* AppDelegate.swift */,
 				842C4A161FE0FD8000D3D199 /* ViewController.swift */,
 				842C4A421FE0FDBD00D3D199 /* YXBaseRecordManager.swift */,
 				840DFF6B1FE2475D00148DEE /* YX_RecordManager.swift */,
+				84DF2C30201F0CB100785E34 /* YXAVPlayer.swift */,
 				844E87171FE128A4005179A6 /* WCLRecordEncoder.h */,
 				844E87161FE128A3005179A6 /* WCLRecordEncoder.m */,
 				842C4A181FE0FD8000D3D199 /* Main.storyboard */,
@@ -273,11 +283,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84DF2C31201F0CB100785E34 /* YXAVPlayer.swift in Sources */,
 				842C4A171FE0FD8000D3D199 /* ViewController.swift in Sources */,
+				84DF2C2D201F060400785E34 /* YXRoundProgressView.swift in Sources */,
 				840DFF6C1FE2475D00148DEE /* YX_RecordManager.swift in Sources */,
 				842C4A151FE0FD8000D3D199 /* AppDelegate.swift in Sources */,
 				844E87181FE128A4005179A6 /* WCLRecordEncoder.m in Sources */,
 				842C4A431FE0FDBD00D3D199 /* YXBaseRecordManager.swift in Sources */,
+				84DF2C2E201F060400785E34 /* YXRecordView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				842C4A2A1FE0FD8000D3D199 /* RecordShortVedioAndAudioTests.swift in Sources */,
+				84DF2C2F201F073600785E34 /* YXRoundProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

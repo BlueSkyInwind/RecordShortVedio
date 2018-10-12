@@ -14,7 +14,7 @@ typealias ResultSampleData = (_ sampleBuffer:CMSampleBuffer , _ output: AVCaptur
 let resolutionX:Int =  1280 //视频分辨的宽
 let resolutionY:Int =  720  //视频分辨的高
 
-class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate{
+class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate,AVCaptureAudioDataOutputSampleBufferDelegate,CAAnimationDelegate{
     
     lazy var captureSession : AVCaptureSession = {
         let captureSession = AVCaptureSession.init()
@@ -22,7 +22,14 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
         return captureSession
     }()
     
-    lazy var  vedioCaptureDevice : AVCaptureDevice = {
+    lazy var previewLayer:AVCaptureVideoPreviewLayer = {
+        let previewLayer = AVCaptureVideoPreviewLayer.init(session: self.captureSession)
+        previewLayer.frame = UIScreen.main.bounds
+        previewLayer.videoGravity = .resizeAspectFill
+        return previewLayer
+    }()
+    
+    lazy var  frontVedioCaptureDevice : AVCaptureDevice = {
         var device : AVCaptureDevice?
         var captureDevices : NSArray
         if #available(iOS 10, *){
@@ -39,11 +46,28 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
         return device!
     }()
     
+    lazy var  backVedioCaptureDevice : AVCaptureDevice = {
+        var device : AVCaptureDevice?
+        var captureDevices : NSArray
+        if #available(iOS 10, *){
+            let devicesIOS10 = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInWideAngleCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.back)
+            captureDevices = devicesIOS10.devices as NSArray
+        }else{
+            captureDevices = AVCaptureDevice.devices(for: AVMediaType.video) as NSArray
+        }
+        for  devices in captureDevices {
+            if (devices as! AVCaptureDevice).position == .back{
+                device = (devices as! AVCaptureDevice)
+            }
+        }
+        return device!
+    }()
+    
     lazy var  audioCaptureDevice : AVCaptureDevice = {
         var device : AVCaptureDevice?
         var captureDevices : NSArray
         if #available(iOS 10, *){
-            let devicesIOS10 = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInMicrophone], mediaType: AVMediaType.audio, position: AVCaptureDevice.Position.front)
+            let devicesIOS10 = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInMicrophone], mediaType: AVMediaType.audio, position: AVCaptureDevice.Position.unspecified)
             captureDevices = devicesIOS10.devices as NSArray
         }else{
             captureDevices = AVCaptureDevice.devices(for: AVMediaType.audio) as NSArray
@@ -70,13 +94,13 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
     
     lazy var audioDataOutput:AVCaptureAudioDataOutput = {
        let audioDataOutput = AVCaptureAudioDataOutput.init()
-        audioDataOutput.setSampleBufferDelegate((self as! AVCaptureAudioDataOutputSampleBufferDelegate), queue: queue)
+        audioDataOutput.setSampleBufferDelegate((self as AVCaptureAudioDataOutputSampleBufferDelegate), queue: queue)
         return audioDataOutput
     }()
     
     var activeVideoInput : AVCaptureDeviceInput?
     var videoConnection:AVCaptureConnection?
-    var isCapturing:Bool?
+
     var resultSampleData:ResultSampleData?
     var recordEncoder:WCLRecordEncoder?
     var _channels:Int = 0 //音频通道
@@ -85,19 +109,6 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
     override init() {
         super.init()
         
-        isCapturing = false
-    }
-    
-    func startSession()  {
-        if !captureSession.isRunning {
-            captureSession.startRunning()
-        }
-    }
-
-    func stopSession()  {
-        if captureSession.isRunning {
-            captureSession.stopRunning()
-        }
     }
     
     //MARK:活跃摄像头配置
@@ -108,6 +119,7 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
         }catch{
             
         }
+        
         if device.isFocusModeSupported(AVCaptureDevice.FocusMode.autoFocus) {
             device.focusMode = AVCaptureDevice.FocusMode.autoFocus
         }
@@ -178,24 +190,48 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
     }
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        //没有开始录制
-        if !self.isCapturing! {
-            return
-        }
+
         if self.resultSampleData != nil {
             self.resultSampleData!(sampleBuffer,output)
         }
     }
     
+    //切换摄像头
+    func changeCameraInputDevice(isFront:Bool) -> Void {
+        let  captureDevice:AVCaptureDevice?
+        self.captureSession.stopRunning()
+        if activeVideoInput != nil {
+            self.captureSession.removeInput(activeVideoInput!)
+        }
+        changeCameraAnimation()
+        if isFront {
+            self.configureActiveInPut(vedioDevice: frontVedioCaptureDevice, audioDevice: audioCaptureDevice)
+        }else{
+            self.configureActiveInPut(vedioDevice: backVedioCaptureDevice, audioDevice: audioCaptureDevice)
+        }
+    }
+    
+    //MARK:切换摄像头动画
+    func changeCameraAnimation()  {
+        let  changeAnimation = CATransition.init()
+        changeAnimation.delegate = self
+        changeAnimation.duration = 0.45
+        changeAnimation.type = "oglFlip"
+        changeAnimation.subtype = kCATransitionFromRight;
+        self.previewLayer.add(changeAnimation, forKey: "changeAnimation")
+    }
+    
     //MARK: 文件路径
-    func getVideoCachePath()  {
-        let filePath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "\\videos"
+    func getVideoCachePath() -> NSString {
+        let fileStr = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! as NSString
+        let filePath = fileStr.strings(byAppendingPaths: ["videos"]).first
         var isDir = ObjCBool(false)
         let fileManager = FileManager.default
-        let isExisted  = fileManager.fileExists(atPath: filePath, isDirectory: &isDir)
+        let isExisted  = fileManager.fileExists(atPath: filePath!, isDirectory: &isDir)
         if !(isDir.boolValue == true && isExisted == true) {
-               try? fileManager.createDirectory(atPath: filePath, withIntermediateDirectories: true, attributes: [:])
+            try? fileManager.createDirectory(atPath: filePath!, withIntermediateDirectories: true, attributes: [:])
         }
+        return filePath as! NSString
     }
     
     func getUploadFileName(_ name:String,type:String) -> String {
@@ -206,20 +242,5 @@ class YXBaseRecordManager: NSObject,AVCaptureVideoDataOutputSampleBufferDelegate
         let timeStr  = formatter.string(from: nowDate as Date)
         return name + timeStr + type
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
 }
